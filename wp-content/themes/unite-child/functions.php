@@ -30,3 +30,23 @@ function getLatestFilms() {
     return $html;
 }
 add_shortcode('latestfilms', 'getLatestFilms');
+
+function renderTaxonomy($v) {
+    return sprintf('<span class="badge">%s</span>', $v->name);
+}
+
+function add_extra_stuff_to_film_post($content) {
+    global $post;
+    if ($post->post_type == 'films') {
+
+        $genre     = array_map('renderTaxonomy', get_the_terms(get_the_ID(), "genre"));
+        $countries = array_map('renderTaxonomy', get_the_terms(get_the_ID(), "country"));
+
+        $content .= sprintf('<div><b>Genre: </b>%s</div>', implode("&nbsp;", $genre));
+        $content .= sprintf('<div><b>Countries: </b>%s</div>', implode("&nbsp;", $countries));
+        $content .= sprintf('<div><b>Ticket Price: </b>$%d</div>', get_post_custom_values('ticket_price', get_the_ID())[0]);
+        $content .= sprintf('<div><b>Release Date: </b>%s', get_post_custom_values('release_date', get_the_ID())[0]);
+    }
+    return $content;
+}
+add_filter('the_content', 'add_extra_stuff_to_film_post');
